@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+venv/
+
+# Environment variables
+.env
+
+# Logs
+logs/
+*.log
+
+# Ignore any compiled libraries or caches
+*.so
+*.pyd
+*.whl
+*.DS_Store
