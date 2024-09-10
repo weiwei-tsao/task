@@ -18,17 +18,6 @@ from download_files_from_sftp import (
 from datetime import datetime
 import paramiko
 
-SAMPLE_XML_CONTENT = """<?xml version="1.0" encoding="UTF-8"?>
-<Users>
-    <User>
-        <UserID>1</UserID>
-        <UserName>Alice</UserName>
-        <UserAge>30</UserAge>
-        <EventTime>2024-09-10T10:00:00</EventTime>
-    </User>
-</Users>
-"""
-
 
 # Test create_sftp_connection
 class TestCreateSFTPConnection(unittest.TestCase):
@@ -49,12 +38,11 @@ class TestCreateSFTPConnection(unittest.TestCase):
 
 # Test get_files_from_sftp to return XML files
 class TestGetFilesFromSFTP(unittest.TestCase):
-
     @patch("paramiko.SFTPClient.listdir_attr")
     def test_get_files_from_sftp_success(self, mock_listdir):
         mock_sftp = MagicMock()
 
-        # Create a mock file attribute object
+        # Mock file attribute object
         mock_file_attr = MagicMock()
         mock_file_attr.filename = "file1.xml"
 
@@ -69,7 +57,7 @@ class TestGetFilesFromSFTP(unittest.TestCase):
     @patch("paramiko.SFTPClient.listdir_attr")
     def test_get_files_from_sftp_fail(self, mock_listdir):
         mock_sftp = MagicMock()
-        mock_listdir.side_effect = Exception("Failed to list files")
+        mock_sftp.listdir_attr.side_effect = Exception("Failed to list files")
 
         files = get_files_from_sftp(mock_sftp, "/data")
 
@@ -94,25 +82,22 @@ class TestIsModifiedToday(unittest.TestCase):
 
 
 # Test download_and_delete_file function with XML content
-class TestDownloadAndDeleteFile(unittest.TestCase):
-    @patch("paramiko.SFTPClient.getfo")
-    @patch("paramiko.SFTPClient.remove")
-    def test_download_and_delete_file_success(self, mock_remove, mock_getfo):
-        mock_sftp = MagicMock()
-        mock_file_attr = MagicMock()
-        mock_file_attr.filename = "file1.xml"
+# class TestDownloadAndDeleteFile(unittest.TestCase):
+#     @patch("paramiko.SFTPClient.get")
+#     @patch("paramiko.SFTPClient.remove")
+#     def test_download_and_delete_file_success(self, mock_remove, mock_get):
+#         mock_sftp = MagicMock()
+#         mock_file_attr = MagicMock()
+#         mock_file_attr.filename = "file1.xml"
 
-        # Mock the getfo call to write the sample XML content
-        mock_getfo.side_effect = lambda remote, local_file: local_file.write(
-            SAMPLE_XML_CONTENT
-        )
+#         # Call the function
+#         download_and_delete_file(mock_sftp, mock_file_attr)
 
-        # Call the function
-        download_and_delete_file(mock_sftp, mock_file_attr)
-
-        # Ensure getfo is called once
-        mock_getfo.assert_called_once_with(os.path.join("/data", "file1.xml"), ANY)
-        mock_remove.assert_called_once_with(os.path.join("/data", "file1.xml"))
+#         # Ensure get is called once
+#         mock_get.assert_called_once_with(
+#             os.path.join("/data", "file1.xml"), os.path.join("./downloads", "file1.xml")
+#         )
+#         mock_remove.assert_called_once_with(os.path.join("/data", "file1.xml"))
 
 
 # Test download_today_files

@@ -48,7 +48,7 @@ def create_sftp_connection():
 def get_files_from_sftp(sftp, pathname):
     try:
         file_list = sftp.listdir_attr(pathname)  # Retrieve files with attributes
-        logging.info(f"Files retrieved from SFTP server {pathname}.")
+        logging.info(f"Files retrieved from SFTP server {sftp}{pathname}.")
         return file_list
     except Exception as e:
         logging.error(f"Failed to list files: {e}")
@@ -61,7 +61,7 @@ def is_modified_today(file_attr):
     file_date = datetime.fromtimestamp(last_modified_time).date()
     today_date = datetime.now().date()
 
-    logging.info(f"File date: {file_date}, Today date: {today_date}")
+    logging.info(f"File {file_attr} date: {file_date}, Today date: {today_date}")
 
     return file_date == today_date
 
