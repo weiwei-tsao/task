@@ -39,14 +39,23 @@ class TestDownloadFilesFromSFTP(unittest.TestCase):
     def test_get_files_from_sftp(self, mock_sftp_client):
         # Mock the file list with attributes
         mock_file_attr = MagicMock()
-        mock_file_attr.st_mtime = 1609459200  # Simulate a file modified on 2021-01-01
+        mock_file_attr.st_mtime = (
+            datetime.now().timestamp()
+        )  # Use timestamp for st_mtime
         mock_file_attr.filename = "test_file.xml"
         mock_sftp_client.listdir_attr.return_value = [mock_file_attr]
 
         # Test file retrieval
         file_list = dffs.get_files_from_sftp(mock_sftp_client, "/data")
+
+        # Check that the file list contains the expected file
         self.assertEqual(len(file_list), 1)
         self.assertEqual(file_list[0].filename, "test_file.xml")
+
+        # Ensure st_mtime is a timestamp and matches the mocked value
+        self.assertAlmostEqual(
+            file_list[0].st_mtime, datetime.now().timestamp(), delta=1
+        )
 
 
 if __name__ == "__main__":
