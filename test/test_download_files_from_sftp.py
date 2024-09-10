@@ -86,22 +86,31 @@ class TestIsModifiedToday(unittest.TestCase):
 
 
 # Test download_and_delete_file function with XML content
-# class TestDownloadAndDeleteFile(unittest.TestCase):
-#     @patch("paramiko.SFTPClient.get")
-#     @patch("paramiko.SFTPClient.remove")
-#     def test_download_and_delete_file_success(self, mock_remove, mock_get):
-#         mock_sftp = MagicMock()
-#         mock_file_attr = MagicMock()
-#         mock_file_attr.filename = "file1.xml"
+class TestDownloadAndDeleteFile(unittest.TestCase):
+    @patch("builtins.open", new_callable=MagicMock)  # Patch open to mock file handling
+    def test_download_and_delete_file_success(self, mock_open):
+        # Create a mock SFTP client
+        mock_sftp = MagicMock()
 
-#         # Call the function
-#         download_and_delete_file(mock_sftp, mock_file_attr)
+        # Mock file attribute object
+        mock_file_attr = MagicMock()
+        mock_file_attr.filename = "file1.xml"
 
-#         # Ensure get is called once
-#         mock_get.assert_called_once_with(
-#             os.path.join("/data", "file1.xml"), os.path.join("./downloads", "file1.xml")
-#         )
-#         mock_remove.assert_called_once_with(os.path.join("/data", "file1.xml"))
+        # Directly mock the getfo and remove methods on the mock_sftp instance
+        mock_sftp.getfo = MagicMock()
+        mock_sftp.remove = MagicMock()
+
+        # Call the function under test
+        download_and_delete_file(mock_sftp, mock_file_attr)
+
+        # Ensure getfo is called once with the correct arguments
+        mock_sftp.getfo.assert_called_once_with(
+            "/data/file1.xml",
+            mock_open().__enter__(),  # This is the mock file object returned by open
+        )
+
+        # Ensure remove is called once with the correct file path
+        mock_sftp.remove.assert_called_once_with("/data/file1.xml")
 
 
 # Test download_today_files
