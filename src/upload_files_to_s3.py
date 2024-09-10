@@ -4,6 +4,8 @@ import os
 import logging
 from dotenv import load_dotenv
 
+from utils import setup_logging
+
 # Load configuration from environment variables
 load_dotenv()
 
@@ -14,7 +16,7 @@ AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 
 
 # Setup logging
-logging.basicConfig(level=logging.INFO)
+setup_logging()
 
 
 # Function to upload a file to S3

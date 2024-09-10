@@ -13,6 +13,8 @@ from concurrent.futures import ThreadPoolExecutor
 from dotenv import load_dotenv
 import os
 
+from utils import setup_logging
+
 # Load configuration from environment variables
 load_dotenv()
 
@@ -26,7 +28,7 @@ DOWNLOAD_PATH = os.getenv("DOWNLOAD_PATH")
 os.makedirs(DOWNLOAD_PATH, exist_ok=True)
 
 # Setup logging
-logging.basicConfig(level=logging.INFO)
+setup_logging()
 
 
 # Create sftp connection

@@ -12,8 +12,10 @@ import os
 from datetime import datetime
 import logging
 
+from utils import setup_logging
+
 # Setup logging
-logging.basicConfig(level=logging.INFO)
+setup_logging()
 
 
 # Parse xml files
