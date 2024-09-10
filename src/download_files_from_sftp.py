@@ -60,6 +60,9 @@ def is_modified_today(file_attr):
     last_modified_time = file_attr.st_mtime
     file_date = datetime.fromtimestamp(last_modified_time).date()
     today_date = datetime.now().date()
+
+    logging.info(f"File date: {file_date}, Today date: {today_date}")
+
     return file_date == today_date
 
 
