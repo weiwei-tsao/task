@@ -38,21 +38,25 @@ class TestCreateSFTPConnection(unittest.TestCase):
 
 # Test get_files_from_sftp to return XML files
 class TestGetFilesFromSFTP(unittest.TestCase):
-    @patch("paramiko.SFTPClient.listdir_attr")
-    def test_get_files_from_sftp_success(self, mock_listdir):
+    def test_get_files_from_sftp_success(self):
+        # Create a mock SFTP client
         mock_sftp = MagicMock()
 
         # Mock file attribute object
         mock_file_attr = MagicMock()
         mock_file_attr.filename = "file1.xml"
 
-        # Mock listdir_attr to return a list of file attributes
-        mock_listdir.return_value = [mock_file_attr]
+        # Set the return value of listdir_attr on the mock_sftp instance
+        mock_sftp.listdir_attr.return_value = [mock_file_attr]
 
+        # Call the function under test
         files = get_files_from_sftp(mock_sftp, "/data")
 
         # Ensure the correct file list is returned
         self.assertEqual(files, [mock_file_attr])
+
+        # Ensure that listdir_attr was called with the correct pathname
+        mock_sftp.listdir_attr.assert_called_with("/data")
 
     @patch("paramiko.SFTPClient.listdir_attr")
     def test_get_files_from_sftp_fail(self, mock_listdir):
