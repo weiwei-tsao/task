@@ -9,186 +9,112 @@ from unittest.mock import MagicMock, patch, mock_open
 import os
 import json
 from transform_xml_to_json import (
+    calculate_average_age,
+    get_field,
     parse_xml_file,
     convert_to_iso8601,
+    safe_int_conversion,
     write_to_json_file,
     transform_xml_to_json,
 )
 from xml.etree.ElementTree import Element, SubElement, tostring
 
 
-class TestTransformXmlToJsonWithSampleData(unittest.TestCase):
-
-    def setUp(self):
-        # Setup XML structure that matches the provided sample XML data
-        self.root = Element("Users")
-
-        # Sample users
-        users = [
-            {
-                "UserID": "1",
-                "UserName": "Alice",
-                "UserAge": "30",
-                "EventTime": "2024-07-30T10:00:00",
-            },
-            {
-                "UserID": "2",
-                "UserName": "Bob",
-                "UserAge": "25",
-                "EventTime": "2024-07-30T11:00:00",
-            },
-            {
-                "UserID": "3",
-                "UserName": "Charlie",
-                "UserAge": "35",
-                "EventTime": "2024-07-30T12:00:00",
-            },
-            {
-                "UserID": "4",
-                "UserName": "David",
-                "UserAge": "28",
-                "EventTime": "2024-07-30T13:00:00",
-            },
-            {
-                "UserID": "5",
-                "UserName": "Eve",
-                "UserAge": "40",
-                "EventTime": "2024-07-30T14:00:00",
-            },
-            {
-                "UserID": "6",
-                "UserName": "Frank",
-                "UserAge": "22",
-                "EventTime": "2024-07-30T15:00:00",
-            },
-            {
-                "UserID": "7",
-                "UserName": "Grace",
-                "UserAge": "33",
-                "EventTime": "2024-07-30T16:00:00",
-            },
-            {
-                "UserID": "8",
-                "UserName": "Heidi",
-                "UserAge": "27",
-                "EventTime": "2024-07-30T17:00:00",
-            },
-            {
-                "UserID": "9",
-                "UserName": "Ivy",
-                "UserAge": "31",
-                "EventTime": "2024-07-30T18:00:00",
-            },
-            {
-                "UserID": "10",
-                "UserName": "Judy",
-                "UserAge": "29",
-                "EventTime": "2024-07-30T19:00:00",
-            },
-        ]
-
-        # Create the XML tree structure
-        for user in users:
-            user_element = SubElement(self.root, "User")
-            for key, value in user.items():
-                field = SubElement(user_element, key)
-                field.text = value
-
-        self.xml_data = tostring(self.root)
+class TestTransformXmlToJson(unittest.TestCase):
 
     @patch("xml.etree.ElementTree.parse")
+    def test_parse_xml_file(self, mock_et_parse):
+        # Mock the XML structure
+        mock_tree = MagicMock()
+        mock_et_parse.return_value = mock_tree
+        mock_root = MagicMock()
+        mock_tree.getroot.return_value = mock_root
+
+        # Mock user element and fields
+        mock_user = MagicMock()
+        mock_root.findall.return_value = [mock_user]
+        mock_user.find.side_effect = lambda x: MagicMock(text=x)
+
+        result = parse_xml_file("./downloads/file1.xml")
+        self.assertEqual(result[0]["UserID"], "UserID")
+        self.assertEqual(result[0]["UserName"], "UserName")
+        self.assertEqual(result[0]["UserAge"], None)  # Testing default None case
+
+    def test_get_field(self):
+        mock_element = MagicMock()
+        mock_field = MagicMock(text="SampleText")
+        mock_element.find.return_value = mock_field
+
+        result = get_field(mock_element, "FieldName", default="Default")
+        self.assertEqual(result, "SampleText")
+
+        # Missing field case
+        mock_element.find.return_value = None
+        result = get_field(mock_element, "MissingField", default="Default")
+        self.assertEqual(result, "Default")
+
+    def test_convert_to_iso8601(self):
+        valid_event_time = "2024-09-01T12:34:56"
+        result = convert_to_iso8601(valid_event_time)
+        self.assertEqual(result, "2024-09-01T12:34:56.000Z")
+
+        # Invalid event time
+        invalid_event_time = "invalid_time"
+        result = convert_to_iso8601(invalid_event_time)
+        self.assertEqual(result, "0000-00-00T00:00:00.000Z")
+
+    def test_safe_int_conversion(self):
+        result = safe_int_conversion("30")
+        self.assertEqual(result, 30)
+
+        # Invalid integer conversion
+        result = safe_int_conversion("invalid")
+        self.assertIsNone(result)
+
+    def test_calculate_average_age(self):
+        users = [{"UserAge": 30}, {"UserAge": 40}, {"UserAge": None}]
+        result = calculate_average_age(users)
+        self.assertEqual(result, 35)
+
+        # No valid ages case
+        users = [{"UserAge": None}]
+        result = calculate_average_age(users)
+        self.assertIsNone(result)
+
     @patch("builtins.open", new_callable=mock_open)
     @patch("os.makedirs")
-    def test_transform_xml_to_json(self, mock_makedirs, mock_open_file, mock_et_parse):
-        # Mock the XML parsing
-        mock_et_parse.return_value.getroot.return_value = self.root
+    def test_write_to_json_file(self, mock_makedirs, mock_open_file):
+        users = [{"UserID": "1", "UserName": "Test"}]
+        write_to_json_file("test.json", users)
 
-        # Mock file writing
-        mock_open = mock_open_file()
+        # Check if directory was created
+        mock_makedirs.assert_called_once()
 
-        # Call the function under test
-        transform_xml_to_json("dummy_path")
+        # Check if file was opened and written to
+        mock_open_file.assert_called_once_with(
+            os.path.join("json", "2024-09-10", "test.json"), "w"
+        )
+        mock_open_file().write.assert_called()
 
-        # Assert that the appropriate directories are created
-        mock_makedirs.assert_called()
+    @patch("transform_xml_to_json.parse_xml_file")
+    @patch("transform_xml_to_json.calculate_average_age")
+    @patch("transform_xml_to_json.write_to_json_file")
+    def test_transform_xml_to_json(
+        self, mock_write_to_json, mock_calculate_average, mock_parse_xml
+    ):
+        # Mock users and average age calculation
+        mock_parse_xml.return_value = [{"UserAge": 30}, {"UserAge": 25}]
+        mock_calculate_average.return_value = 27
 
-        # Verify the written content
-        expected_above_avg_users = [
-            {
-                "UserID": "1",
-                "UserName": "Alice",
-                "UserAge": 30,
-                "EventTime": "2024-07-30T10:00:00.000Z",
-            },
-            {
-                "UserID": "3",
-                "UserName": "Charlie",
-                "UserAge": 35,
-                "EventTime": "2024-07-30T12:00:00.000Z",
-            },
-            {
-                "UserID": "5",
-                "UserName": "Eve",
-                "UserAge": 40,
-                "EventTime": "2024-07-30T14:00:00.000Z",
-            },
-            {
-                "UserID": "7",
-                "UserName": "Grace",
-                "UserAge": 33,
-                "EventTime": "2024-07-30T16:00:00.000Z",
-            },
-            {
-                "UserID": "9",
-                "UserName": "Ivy",
-                "UserAge": 31,
-                "EventTime": "2024-07-30T18:00:00.000Z",
-            },
-        ]
+        transform_xml_to_json("./downloads/file1.xml")
 
-        expected_below_avg_users = [
-            {
-                "UserID": "2",
-                "UserName": "Bob",
-                "UserAge": 25,
-                "EventTime": "2024-07-30T11:00:00.000Z",
-            },
-            {
-                "UserID": "4",
-                "UserName": "David",
-                "UserAge": 28,
-                "EventTime": "2024-07-30T13:00:00.000Z",
-            },
-            {
-                "UserID": "6",
-                "UserName": "Frank",
-                "UserAge": 22,
-                "EventTime": "2024-07-30T15:00:00.000Z",
-            },
-            {
-                "UserID": "8",
-                "UserName": "Heidi",
-                "UserAge": 27,
-                "EventTime": "2024-07-30T17:00:00.000Z",
-            },
-            {
-                "UserID": "10",
-                "UserName": "Judy",
-                "UserAge": 29,
-                "EventTime": "2024-07-30T19:00:00.000Z",
-            },
-        ]
-
-        # Capture written data
-        calls = mock_open.write.call_args_list
-        written_data = "".join([call[0][0] for call in calls])
-
-        # Validate content for above and below average users
-        for user in expected_above_avg_users:
-            self.assertIn(json.dumps(user), written_data)
-
-        for user in expected_below_avg_users:
-            self.assertIn(json.dumps(user), written_data)
+        # Ensure users were written to the correct files
+        mock_write_to_json.assert_any_call(
+            "above_average_output.json", [{"UserAge": 30}]
+        )
+        mock_write_to_json.assert_any_call(
+            "below_average_output.json", [{"UserAge": 25}]
+        )
 
 
 if __name__ == "__main__":

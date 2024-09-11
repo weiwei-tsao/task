@@ -1,0 +1,6 @@
+{"UserID": "1", "UserName": "Alice", "UserAge": 30, "EventTime": "2024-07-30T10:00:00.000Z"}
+{"UserID": "2", "UserName": "Bob", "UserAge": 25, "EventTime": "2024-07-30T11:00:00.000Z"}
+{"UserID": "4", "UserName": "David", "UserAge": 28, "EventTime": "2024-07-30T13:00:00.000Z"}
+{"UserID": "6", "UserName": "Frank", "UserAge": 22, "EventTime": "2024-07-30T15:00:00.000Z"}
+{"UserID": "8", "UserName": "Heidi", "UserAge": 27, "EventTime": "2024-07-30T17:00:00.000Z"}
+{"UserID": "10", "UserName": "Judy", "UserAge": 29, "EventTime": "2024-07-30T19:00:00.000Z"}

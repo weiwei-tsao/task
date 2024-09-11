@@ -139,4 +139,4 @@ def transform_xml_to_json(file_path):
 
 
 if __name__ == "__main__":
-    transform_xml_to_json("data.xml")
+    transform_xml_to_json("./downloads/file1.xml")
