@@ -12,9 +12,11 @@ It asks to implement the following three steps:
 
 ## Solution
 
-### Step 1
+This main script `src/main.py` will allow you to run the entire process in sequence. It handles logging, error management, and ensures that all parts of the workflow are connected. Meanwhile, you can modify the `xml_file_path` in `Step 2` to dynamically get the downloaded XML file if necessary. Below is details of each part inside the `src` folder.
 
-The workflow of step 1 can be breakdown as following parts:
+### Step 1 - download_files_from_sftp.py
+
+The `download_today_files()` function downloads the XML files from the SFTP server. The workflow of step 1 can be breakdown as following parts:
 
 - Connect to the SFTP server with secured credentials which configured in environment file.
 - List all the files on the server and
@@ -23,9 +25,9 @@ The workflow of step 1 can be breakdown as following parts:
 
 There are couple things which need to be handle carefully. One of the potential is if there are lots of current day files, how to improve the copy action efficiency. The thread pool is applied to help us achieve it.
 
-### Step 2
+### Step 2 - transform_xml_to_json.py
 
-At this part, the workflow is straightforward:
+The `transform_xml_to_json()` function transforms the downloaded XML file into JSON format. The workflow is straightforward:
 
 - parse xml file from the download folder
 - do calculation based on user age which gets from each xml file and
@@ -34,9 +36,13 @@ At this part, the workflow is straightforward:
 
 In this step, here are couple points need more attention. The first thing is if some fields in the xml file are missing, there should be a default value to handle it. The second thing is that as we need to do age calculation, each user's age must be a valid number to do calculation. Lastly, for future convenience, the generated json files are grouped by the date.
 
-### Step 3
+### Step 3 - upload_files_to_s3.py
 
-Last part is to upload json files to AWS S3. AWS credentials and S3 configuration are put into the environment file as discussed before.
+Last part is to upload json files to AWS S3. AWS credentials and S3 configuration are put into the environment file as discussed before. The `upload_json_files_to_s3()` function uploads the generated JSON files to the configured S3 bucket.
+
+### Logs
+
+The `setup_logging()` function from `utils.py` sets up logging to capture process information.
 
 ## Assumptions
 
